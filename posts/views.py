@@ -4,7 +4,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from posts.models import Posting
-
+from posts.serializers import PostingSerializer
 # Create your views here.
 
 
@@ -14,12 +14,13 @@ class PostingView(APIView):
     추후 페이지네이션 추가
     """
     def get(self, request):
-        pass
+        return Response(status=status.HTTP_200_OK)
     """
     게시글 작성기능(모달창 사용시)
     """
     def post(self, request):
-        pass
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class PostingCreateView(APIView):
@@ -27,20 +28,29 @@ class PostingCreateView(APIView):
     게시글 작성 페이지 띄워주기
     """
     def get(self, request):
-        pass
+        return Response(status=status.HTTP_200_OK)
+
     """
     게시글 작성 요청하기
     """
     def post(self, request):
-        pass
+        serializer = PostingSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class PostingDetailView(APIView):
     def get(self, request):
-        pass
+        return Response(status=status.HTTP_200_OK)
+
     def post(self, request):
-        pass
+        return Response(status=status.HTTP_200_OK)
+
     def put(self, request):
-        pass
+        return Response(status=status.HTTP_200_OK)
+
     def delete(self, request):
-        pass
+        return Response(status=status.HTTP_200_OK)
+
