@@ -14,6 +14,7 @@ class PostingView(APIView):
     """
     게시글 리스트 모두 보여주기(작성 시간순으로 정렬)
     추후 페이지네이션 추가
+    로그인 안해도 볼 수 있게?
     """
 
     def get(self, request):
@@ -58,6 +59,8 @@ class PostingDetailView(APIView):
         # posting = get_object_or_404(Posting, id=posting_id)
         # if posting.user == request.user
         serializer = PostingDetailSerializer(data=request.data)
+        # else:
+        #   return Response(status=status.HTTP_401_UNAUTHORIZED)
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -75,4 +78,4 @@ class PostingDetailView(APIView):
         posting.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         # else:
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+        #   return Response(status=status.HTTP_401_UNAUTHORIZED)
