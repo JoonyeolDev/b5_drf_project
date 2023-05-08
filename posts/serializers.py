@@ -5,4 +5,8 @@ from posts.models import Posting
 class PostingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Posting
-        fields = "__all__"
+        fields = (
+            "title",
+            "content",
+            "image",
+        )
