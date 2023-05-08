@@ -4,7 +4,11 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from posts.models import Posting
-from posts.serializers import PostingSerializer, PostingDetailSerializer
+from posts.serializers import (
+    PostingSerializer,
+    PostingDetailSerializer,
+    CommentSerializer,
+)
 
 # Create your views here.
 
@@ -79,3 +83,22 @@ class PostingDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
         # else:
         #   return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class CommentCreateView(APIView):
+    def post(self, request, posting_id):
+        posting = get_object_or_404(Posting, id=posting_id)
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(posting=posting, user=request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentView(APIView):
+    def put(self, request, posting_id, comment_id):
+        pass
+
+    def delete(self, request, posting_id, comment_id):
+        pass
