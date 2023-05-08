@@ -50,7 +50,7 @@ class User(AbstractBaseUser):
     introduction = models.TextField("자기소개", null=True, blank=True)
     image = models.ImageField("프로필 이미지", blank=True, upload_to="%Y/%m/")
     preference = models.CharField("선호 음료", max_length=256, null=True, blank=True)
-    # followings = models.ManyToManyField()
+    followings = models.ManyToManyField("self", symmetrical=False, related_name="followers", blank=True)
 
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
