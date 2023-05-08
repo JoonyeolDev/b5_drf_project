@@ -12,3 +12,10 @@ class Posting(models.Model):
     created_at = models.DateTimeField("생성일", auto_now_add=True)
     updated_at = models.DateTimeField("수정일", auto_now=True)
     image = models.ImageField("이미지", null=True, upload_to="", blank=True)
+
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    posting = models.ForeignKey(Posting, on_delete=models.CASCADE)
+    content = models.TextField("내용")
+    created_at = models.DateTimeField("생성일", auto_now_add=True)
+    updated_at = models.DateTimeField("수정일", auto_now=True)
