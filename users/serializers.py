@@ -19,3 +19,27 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("email", "password", "username", "gender", "date_of_birth", "preference", "introduction")
+        read_only_fields = ["email",]
+        extra_kwargs = {
+            "password": {
+                "write_only": True,
+            },
+        }
+
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get("email", instance.email)
+        instance.username = validated_data.get("username", instance.username)
+        instance.gender = validated_data.get("gender", instance.gender)
+        instance.date_of_birth = validated_data.get("date_of_birth", instance.date_of_birth)
+        instance.preference = validated_data.get("preference", instance.preference)
+        instance.introduction = validated_data.get(
+            "introduction", instance.introduction)
+        instance.password = validated_data.get("password", instance.password)
+        instance.set_password(instance.password)
+        instance.save()
+        return instance
+    
