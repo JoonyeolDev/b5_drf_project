@@ -36,7 +36,7 @@ class PostingView(APIView):
             serializer.save(user=request.user)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # posting/<int:posting_id>/
@@ -143,7 +143,6 @@ class LikeView(APIView):
     """
     게시글 좋아요
     """
-
     def post(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
         try:
