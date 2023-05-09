@@ -94,12 +94,13 @@ class CommentView(APIView):
     댓글 보기
     posting.user == request.user인지 확인
     """
+
     def get(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
         comments = posting.comment_set.all()
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def post(self, request, posting_id):
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -125,4 +126,4 @@ class CommentModifyView(APIView):
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         # else:
-            # return Response(status=status.HTTP_400_BAD_REQUEST)
+        # return Response(status=status.HTTP_400_BAD_REQUEST)
