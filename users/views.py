@@ -4,7 +4,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from users.models import User
 from posts.serializers import PostingSerializer
+from products.serializers import ProductReviewSerializer
 from posts.models import Posting
+from products.models import ProductReview
 
 
 from users.serializers import UserSerializer, UserUpdateSerializer, UserProfileSerializer
@@ -59,7 +61,9 @@ class FollowView(APIView):
 
 class MypageView(APIView):
 
-    def get(self, request):
-        postings = Posting.objects.filter(user=request.user).order_by('-created_at')
-        serializer = PostingSerializer(postings, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, user_id):
+        postings = Posting.objects.filter(id=user_id).order_by('-created_at')
+        posting_serializer = PostingSerializer(postings, many=True)
+        # reviews = ProductReview.objects.filter(user=request.user).order_by('-created_at')
+        # review_serializer = ProductReviewSerializer(reviews, many=True)
+        return Response(posting_serializer.data, status=status.HTTP_200_OK)

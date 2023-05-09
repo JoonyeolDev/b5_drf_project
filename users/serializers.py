@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from users.models import User
+from posts.serializers import PostingSerializer
+from products.serializers import ProductListSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -59,4 +61,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields=("id", "email", "username", "image", "gender", "date_of_birth", "preference", "introduction", "followings_count", "followers_count")
-        
+
+
+class UserMypageSerializer(serializers.ModelSerializer):
+    
+    posting_set = PostingSerializer(many=True)
+    review_set = ProductListSerializer(many=True)
+    
+    class Meta:
+        model = User
+        fields = ("posting_set", "review_set")
