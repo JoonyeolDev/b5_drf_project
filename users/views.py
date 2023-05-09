@@ -46,12 +46,15 @@ class FollowView(APIView):
     def post(self, request, user_id):
         you = get_object_or_404(User, id=user_id)
         me = request.user
-        if me in you.followers.all():
-            you.followers.remove(me)
-            return Response("언팔로우했습니다.", status=status.HTTP_200_OK)
+        if me.id == you.id:
+            return Response("자기 자신은 팔로우할 수 없습니다.", status=status.HTTP_400_BAD_REQUEST)
         else:
-            you.followers.add(me)
-            return Response("팔로우했습니다.", status=status.HTTP_200_OK)
+            if me in you.followers.all():
+                you.followers.remove(me)
+                return Response("언팔로우했습니다.", status=status.HTTP_200_OK)
+            else:
+                you.followers.add(me)
+                return Response("팔로우했습니다.", status=status.HTTP_200_OK)
 
 
 class MypageView(APIView):
