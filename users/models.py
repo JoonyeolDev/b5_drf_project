@@ -48,7 +48,7 @@ class User(AbstractBaseUser):
     gender = models.CharField("성별", max_length=1, choices=GENDERS)
     date_of_birth = models.DateField("생년월일", null=True)
     introduction = models.TextField("자기소개", null=True, blank=True)
-    image = models.ImageField("프로필 이미지", blank=True, upload_to="%Y/%m/")
+    image = models.ImageField("프로필 이미지", blank=True, upload_to="profile/%Y/%m/")
     preference = models.CharField("선호 음료", max_length=256, null=True, blank=True)
     followings = models.ManyToManyField("self", symmetrical=False, related_name="followers", blank=True)
 
