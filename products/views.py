@@ -1,35 +1,36 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from products.models import Product, ProductReview
 from products.serializers import ProductSerializer, ProductCreateSerializer, ProductListSerializer, ProductReviewSerializer, ProductReviewCreateSerializer
 
 # Create your views here.
 
+# product/
 class ProductView(APIView):
+    # IsAuthenticatedOrReadOnly : 인증된 사람은 쓰기 가능, 그 외 읽기만 가능[GET, HEAD, OPTIONS]
+    # IsAdminUser : 관리자만 쓰기 가능[POST, PUT, PATCH, DELETE]
+    # 두 개를 같이쓰면 : 인증된 관리자만 쓰기가능, 그 외 읽기만 가능
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.IsAdminUser]
+
     def get(self,request):
         products = Product.objects.all()
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self,request):
-        # if not request.user.is_authenticated:
-        #     return Response({"message":"로그인 해주세요"}, status=status.HTTP_401_UNAUTHORIZED)
-        # if not request.user.is_superuser:
-        #     return Response({"massage":"관리자 계정이 아닙니다"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         serializer = ProductCreateSerializer(data=request.data)
-
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
 
+# product/<int:product_id>/
 class ProductDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.IsAdminUser]
+
     def get(self,request,product_id):
         product = get_object_or_404(Product, id=product_id)
         serializer = ProductSerializer(product)
@@ -37,9 +38,6 @@ class ProductDetailView(APIView):
 
     def put(self,request,product_id):
         product = get_object_or_404(Product, id=product_id)
-        # if not request.user.is_superuser:
-        #     return Response({"massage":"권한이 없습니다"}, status=status.HTTP_403_FORBIDDEN)
-
         serializer = ProductCreateSerializer(product, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -49,26 +47,26 @@ class ProductDetailView(APIView):
 
     def delete(self,request,product_id):
         product = get_object_or_404(Product, id=product_id)
-        # if not request.user.is_superuser:
-        #     return Response({"massage":"권한이 없습니다"}, status=status.HTTP_403_FORBIDDEN)
-
         product.delete()
         return Response({"massage":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)
-    
+
+
+# product/<int:product_id>/review/
 class ProductReviewView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
     def get(self,request, product_id):
         product = get_object_or_404(Product, id=product_id)
         reviews = product.productreview_set.all()
         serializer = ProductReviewSerializer(reviews, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
     def post(self,request, product_id):
-        # if not request.user.is_authenticated:
-        #     return Response({"message":"로그인 해주세요"}, status=status.HTTP_401_UNAUTHORIZED)
-        # if not request.user.is_superuser:
-        #     return Response({"massage":"관리자 계정이 아닙니다"}, status=status.HTTP_401_UNAUTHORIZED)
-        
+        if not request.user.is_authenticated:
+            return Response({"message":"로그인 해주세요"}, status=status.HTTP_401_UNAUTHORIZED)
+        if not request.user.is_admin:
+            return Response({"massage":"권한이 없습니다"}, status=status.HTTP_401_UNAUTHORIZED)
+
         serializer = ProductReviewCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user,product_id=product_id)
@@ -77,23 +75,28 @@ class ProductReviewView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# product/<int:product_id>/review/<int:review_id>
 class ProductReviewDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
     def get(self,request, product_id):
         review = get_object_or_404(ProductReview, id=product_id)
         serializer = ProductReviewSerializer(review, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def put(self,request, product_id, review_id):
-        product = get_object_or_404(Product, id=review_id)
         if not request.user.is_authenticated:
-            serializer = ProductReviewSerializer(product, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message":"로그인 해주세요"}, status=status.HTTP_401_UNAUTHORIZED)
+        if not request.user.is_admin:
+            return Response({"massage":"권한이 없습니다"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        product = get_object_or_404(Product, id=review_id)
+        serializer = ProductReviewSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response("권한이 없습니다", status=status.HTTP_403_FORBIDDEN)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self,request, product_id, review_id):
         product = get_object_or_404(Product, id=review_id)
@@ -103,7 +106,11 @@ class ProductReviewDetailView(APIView):
         else:
             return Response("권한이 없습니다", status=status.HTTP_403_FORBIDDEN)
 
+
+# product/<int:product_id>/like/
 class LikeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
     def post(self,request, product_id):
         product = get_object_or_404(Product, id = product_id)
         if request.user in product.likes.all():
@@ -113,7 +120,11 @@ class LikeView(APIView):
             product.likes.add(request.user)
             return Response("좋아요를 눌렀습니다", status=status.HTTP_200_OK)
 
+
+# product/<int:product_id>/review/<int:review_id>/like/
 class ProductReviewLikeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self,request, review_id):
         review = get_object_or_404(ProductReview, id = review_id)
         if request.user in review.likes.all():
