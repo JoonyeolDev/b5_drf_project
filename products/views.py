@@ -115,7 +115,7 @@ class LikeView(APIView):
 
 class ProductReviewLikeView(APIView):
     def post(self,request, review_id):
-        review = get_object_or_404(review, id = review_id)
+        review = get_object_or_404(ProductReview, id = review_id)
         if request.user in review.likes.all():
             review.likes.remove(request.user)
             return Response("좋아요를 취소했습니다", status=status.HTTP_200_OK)
