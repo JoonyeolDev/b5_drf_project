@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from posts.models import Posting, Comment
+from posts.models import Posting, Comment, Like
 from posts.serializers import (
     PostingSerializer,
     PostingDetailSerializer,
@@ -92,7 +92,7 @@ class PostingDetailView(APIView):
 class CommentView(APIView):
     """
     댓글 보기
-    posting.user == request.user인지 확인
+    posting_id가 일치하는 comment를 related_name으로 가져오기
     """
 
     def get(self, request, posting_id):
@@ -127,3 +127,14 @@ class CommentModifyView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
         # else:
         # return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class LikeView(APIView):
+    def post(self, request, posting_id):
+        # is_liked = get_object_or_404(Like, user=request.user, posting_id=posting_id)
+        # like = Like.objects.filter(posting_id=posting_id, user=request.user)
+        like = Like.objects.filter(posting_id=posting_id)
+        if like:
+            like.delete()
+        if not like:
+            like.save(posting_id=posting_id)
+            # like.save(posting_id=posting_id, user=request.user)
