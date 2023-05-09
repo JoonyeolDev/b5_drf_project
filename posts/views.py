@@ -11,8 +11,6 @@ from posts.serializers import (
     CommentCreateSerializer,
 )
 
-# Create your views here.
-
 
 # posting/
 class PostingView(APIView):
@@ -35,8 +33,7 @@ class PostingView(APIView):
     def post(self, request):
         serializer = PostingSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            # serializer.save(user=request.user)
+            serializer.save(user=request.user)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -46,34 +43,32 @@ class PostingView(APIView):
 class PostingDetailView(APIView):
     """
     게시글 상세보기 페이지
-    id = posting_id인 게시글 1개 가져오기,
-    (댓글 추가시) 댓글 fk가 posting_id인 댓글들도 가져오기
+    id = posting_id인 게시글 1개 가져오기
     """
 
     def get(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
-        comment = Comment.objects.filter(id=posting_id)
+        # comment = Comment.objects.filter(id=posting_id)
         serializer = PostingDetailSerializer(posting)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     """
     게시글 수정하기
     posting.user == request.user인지 확인
-    get요청으로 받아온 값들 default로 채워주기
+    get요청으로 받아온 값들 default로 채워주기(프론트에서?)
     """
 
     def put(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
         serializer = PostingDetailSerializer(posting, data=request.data)
-        # if posting.user == request.user
-        if serializer.is_valid():
-            serializer.save()
-            # serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        if posting.user == request.user:
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # else:
-        #   return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     """
     게시글 삭제하기
@@ -82,11 +77,11 @@ class PostingDetailView(APIView):
 
     def delete(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
-        # if posting.user == request.user
-        posting.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        # else:
-        #   return Response(status=status.HTTP_401_UNAUTHORIZED)
+        if posting.user == request.user:
+            posting.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class CommentView(APIView):
@@ -101,40 +96,60 @@ class CommentView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    """
+    댓글 작성
+    """
+
     def post(self, request, posting_id):
+        posting = get_object_or_404(Posting, id=posting_id)
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(posting_id=posting_id)
-            # serializer.save(posting_id=posting_id, user=request.user)
+            serializer.save(posting=posting, user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentModifyView(APIView):
+    """
+    댓글 수정
+    """
+
     def put(self, request, posting_id, comment_id):
+        posting = get_object_or_404(Posting, id=posting_id)
         comment = get_object_or_404(Comment, id=comment_id)
         serializer = CommentSerializer(comment, data=request.data)
-        if serializer.is_valid():
-            serializer.save(posting_id=posting_id)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            # serializer.save(user=request.user, posting=posting)
+        if comment.user == request.user:
+            if serializer.is_valid():
+                serializer.save(user=request.user, posting=posting)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    """
+    댓글 삭제
+    """
 
     def delete(self, request, posting_id, comment_id):
         comment = get_object_or_404(Comment, id=comment_id)
-        # if comment.user == request.user:
-        comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        # else:
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
+        if comment.user == request.user:
+            comment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 class LikeView(APIView):
+    """
+    게시글 좋아요
+    """
+
     def post(self, request, posting_id):
-        # is_liked = get_object_or_404(Like, user=request.user, posting_id=posting_id)
-        # like = Like.objects.filter(posting_id=posting_id, user=request.user)
-        like = Like.objects.filter(posting_id=posting_id)
-        if like:
+        posting = get_object_or_404(Posting, id=posting_id)
+        try:
+            like = Like.objects.get(posting=posting, user=request.user)
             like.delete()
-        if not like:
-            like.save(posting_id=posting_id)
-            # like.save(posting_id=posting_id, user=request.user)
+            return Response("좋아요 삭제", status=status.HTTP_200_OK)
+        except Like.DoesNotExist:
+            like = Like.objects.create(posting=posting, user=request.user)
+            return Response("좋아요", status=status.HTTP_200_OK)
