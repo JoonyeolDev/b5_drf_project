@@ -75,7 +75,8 @@ class UserMypageSerializer(serializers.ModelSerializer):
 class UserFeedSerializer(serializers.ModelSerializer):
     
     like_products = ProductListSerializer(many=True)
+    like_reviews = ProductReviewSerializer(many=True)
 
     class Meta:
         model = User
-        fields = ("like_products", )
+        fields = ("like_products", "like_reviews")
