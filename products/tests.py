@@ -20,7 +20,7 @@ def get_temporary_image(temp_file):
     return
 
 
-class ProductListReadTest(APITestCase):
+class ProductReadTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.faker = Faker()
