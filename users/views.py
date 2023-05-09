@@ -9,8 +9,12 @@ from posts.models import Posting
 from products.models import ProductReview
 
 
-from users.serializers import UserSerializer, UserUpdateSerializer, UserProfileSerializer
-
+from users.serializers import (
+    UserSerializer, 
+    UserUpdateSerializer, 
+    UserProfileSerializer,
+    UserMypageSerializer
+)
 
 class UserView(APIView):
     def post(self, request):
@@ -62,8 +66,6 @@ class FollowView(APIView):
 class MypageView(APIView):
 
     def get(self, request, user_id):
-        postings = Posting.objects.filter(id=user_id).order_by('-created_at')
-        posting_serializer = PostingSerializer(postings, many=True)
-        # reviews = ProductReview.objects.filter(user=request.user).order_by('-created_at')
-        # review_serializer = ProductReviewSerializer(reviews, many=True)
-        return Response(posting_serializer.data, status=status.HTTP_200_OK)
+        user = get_object_or_404(User, id=user_id)
+        serializer = UserMypageSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
