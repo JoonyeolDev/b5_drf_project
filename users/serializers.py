@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("email", "password", "username", "gender", "date_of_birth", "preference", "introduction")
+        fields = ("email", "password", "username", "gender", "date_of_birth", "preference", "introduction", "image")
         read_only_fields = ["email",]
         extra_kwargs = {
             "password": {
@@ -38,6 +38,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.preference = validated_data.get("preference", instance.preference)
         instance.introduction = validated_data.get(
             "introduction", instance.introduction)
+        instance.image = validated_data.get(
+            "image", instance.image)    
         instance.password = validated_data.get("password", instance.password)
         instance.set_password(instance.password)
         instance.save()
