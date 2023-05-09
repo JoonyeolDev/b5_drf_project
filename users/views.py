@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from users.models import User
+from posts.serializers import PostingSerializer
+from posts.models import Posting
 
 
 from users.serializers import UserSerializer, UserUpdateSerializer, UserProfileSerializer
@@ -34,8 +36,9 @@ class ProfileView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request):
-        return Response(UserProfileSerializer(request.user).data, status=status.HTTP_200_OK)
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        return Response(UserProfileSerializer(user).data, status=status.HTTP_200_OK)
     
 class FollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -49,3 +52,11 @@ class FollowView(APIView):
         else:
             you.followers.add(me)
             return Response("팔로우했습니다.", status=status.HTTP_200_OK)
+
+
+class MypageView(APIView):
+
+    def get(self, request):
+        postings = Posting.objects.filter(user=request.user).order_by('-created_at')
+        serializer = PostingSerializer(postings, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
