@@ -19,7 +19,7 @@ class UserView(APIView):
 
 class ProfileView(APIView):
 
-    def post(self, request):
+    def delete(self, request):
         user = request.user
         user.is_active = False
         user.save()
