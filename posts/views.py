@@ -3,11 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from posts.models import Posting
+from posts.models import Posting, Comment
 from posts.serializers import (
     PostingSerializer,
     PostingDetailSerializer,
     CommentSerializer,
+    CommentCreateSerializer,
 )
 
 # Create your views here.
@@ -34,10 +35,11 @@ class PostingView(APIView):
     def post(self, request):
         serializer = PostingSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save()
+            # serializer.save(user=request.user)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # posting/<int:posting_id>/
@@ -50,6 +52,7 @@ class PostingDetailView(APIView):
 
     def get(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
+        comment = Comment.objects.filter(id=posting_id)
         serializer = PostingDetailSerializer(posting)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -60,16 +63,17 @@ class PostingDetailView(APIView):
     """
 
     def put(self, request, posting_id):
-        # posting = get_object_or_404(Posting, id=posting_id)
+        posting = get_object_or_404(Posting, id=posting_id)
+        serializer = PostingDetailSerializer(posting, data=request.data)
         # if posting.user == request.user
-        serializer = PostingDetailSerializer(data=request.data)
-        # else:
-        #   return Response(status=status.HTTP_401_UNAUTHORIZED)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save()
+            # serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #   return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     """
     게시글 삭제하기
@@ -85,20 +89,40 @@ class PostingDetailView(APIView):
         #   return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-class CommentCreateView(APIView):
-    def post(self, request, posting_id):
+class CommentView(APIView):
+    """
+    댓글 보기
+    posting.user == request.user인지 확인
+    """
+    def get(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
-        serializer = CommentSerializer(data=request.data)
+        comments = posting.comment_set.all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request, posting_id):
+        serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(posting=posting, user=request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer.save(posting_id=posting_id)
+            # serializer.save(posting_id=posting_id, user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CommentView(APIView):
+class CommentModifyView(APIView):
     def put(self, request, posting_id, comment_id):
-        pass
+        comment = get_object_or_404(Comment, id=comment_id)
+        serializer = CommentSerializer(comment, data=request.data)
+        if serializer.is_valid():
+            serializer.save(posting_id=posting_id)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            # serializer.save(user=request.user, posting=posting)
 
     def delete(self, request, posting_id, comment_id):
-        pass
+        comment = get_object_or_404(Comment, id=comment_id)
+        # if comment.user == request.user:
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        # else:
+            # return Response(status=status.HTTP_400_BAD_REQUEST)

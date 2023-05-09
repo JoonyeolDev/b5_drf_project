@@ -24,6 +24,23 @@ class PostingDetailSerializer(serializers.ModelSerializer):
         )
 
 
+class PostingDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Posting
+        fields = (
+            "title",
+            "content",
+            "image",
+            "updated_at",
+        )
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ("content",)
+
+
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
