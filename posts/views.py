@@ -101,10 +101,10 @@ class CommentView(APIView):
     """
 
     def post(self, request, posting_id):
+        posting = get_object_or_404(Posting, id=posting_id)
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(posting_id=posting_id)
-            # serializer.save(posting_id=posting_id, user=request.user)
+            serializer.save(posting=posting, user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -116,12 +116,15 @@ class CommentModifyView(APIView):
     """
 
     def put(self, request, posting_id, comment_id):
+        posting = get_object_or_404(Posting, id=posting_id)
         comment = get_object_or_404(Comment, id=comment_id)
         serializer = CommentSerializer(comment, data=request.data)
-        if serializer.is_valid():
-            serializer.save(posting_id=posting_id)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            # serializer.save(user=request.user, posting=posting)
+        if comment.user == request.user:
+            if serializer.is_valid():
+                serializer.save(user=request.user, posting=posting)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     """
     댓글 삭제
@@ -129,11 +132,11 @@ class CommentModifyView(APIView):
 
     def delete(self, request, posting_id, comment_id):
         comment = get_object_or_404(Comment, id=comment_id)
-        # if comment.user == request.user:
-        comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        # else:
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
+        if comment.user == request.user:
+            comment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LikeView(APIView):
