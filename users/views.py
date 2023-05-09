@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from users.models import User
 
 
-from users.serializers import UserSerializer, UserUpdateSerializer
+from users.serializers import UserSerializer, UserUpdateSerializer, UserProfileSerializer
 
 
 class UserView(APIView):
@@ -36,7 +36,7 @@ class ProfileView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+        return Response(UserProfileSerializer(request.user).data, status=status.HTTP_200_OK)
     
 class FollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]

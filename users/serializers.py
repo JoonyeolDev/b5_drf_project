@@ -44,4 +44,9 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.set_password(instance.password)
         instance.save()
         return instance
-    
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields=("id", "email", "username", "image", "gender", "date_of_birth", "preference", "introduction", "followings", "followers")
