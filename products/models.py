@@ -28,8 +28,8 @@ class ProductReview(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     score = models.IntegerField(choices=SCORE_CHOICES)
     content = models.TextField()
-    price = models.PositiveIntegerField()
-    store = models.CharField(max_length=50)
+    price = models.IntegerField(blank=True, null=True)
+    store = models.CharField(max_length=50, blank=True, null=True)
     likes = models.ManyToManyField(User, related_name="like_reviews")
 
     def __str__(self):

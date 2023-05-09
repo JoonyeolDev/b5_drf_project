@@ -5,7 +5,7 @@ class ProductReviewCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductReview
-        fields = ('score','content')
+        fields = ('score','content','price','store')
 
 class ProductReviewSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
@@ -15,7 +15,7 @@ class ProductReviewSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProductReview
-        fields = '__all__'
+        fields = ('score','content','price','store','likes_count')
 
 
 class ProductListSerializer(serializers.ModelSerializer):
@@ -26,13 +26,13 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('name','image','brand','likes_count')
+        fields = ('id','name','image','brand','likes_count')
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('name','image','brand')
+        fields = ('name','introdution','image','brand')
 
 
 class ProductSerializer(serializers.ModelSerializer):
