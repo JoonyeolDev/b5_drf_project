@@ -18,7 +18,6 @@ class UserView(APIView):
             return Response({"message": f"${serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class ProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         user = request.user
