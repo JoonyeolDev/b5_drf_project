@@ -16,7 +16,7 @@ class Posting(models.Model):
 
 
 class Comment(models.Model):
-    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     posting = models.ForeignKey(Posting, on_delete=models.CASCADE)
     content = models.TextField("내용")
     created_at = models.DateTimeField("댓글 생성일", auto_now_add=True)
@@ -28,6 +28,6 @@ class Comment(models.Model):
 
 
 class Like(models.Model):
-    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     posting = models.ForeignKey(Posting, on_delete=models.CASCADE)
     created_at = models.DateTimeField("추천일", auto_now_add=True)
