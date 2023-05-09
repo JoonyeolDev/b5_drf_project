@@ -145,11 +145,11 @@ class LikeView(APIView):
     """
 
     def post(self, request, posting_id):
-        # is_liked = get_object_or_404(Like, user=request.user, posting_id=posting_id)
-        # like = Like.objects.filter(posting_id=posting_id, user=request.user)
-        like = Like.objects.filter(posting_id=posting_id)
-        if like:
+        posting = get_object_or_404(Posting, id=posting_id)
+        try:
+            like = Like.objects.get(posting=posting, user=request.user)
             like.delete()
-        if not like:
-            like.save(posting_id=posting_id)
-            # like.save(posting_id=posting_id, user=request.user)
+            return Response("좋아요 삭제", status=status.HTTP_200_OK)
+        except Like.DoesNotExist:
+            like = Like.objects.create(posting=posting, user=request.user)
+            return Response("좋아요", status=status.HTTP_200_OK)
