@@ -13,7 +13,8 @@ from users.serializers import (
     UserSerializer, 
     UserUpdateSerializer, 
     UserProfileSerializer,
-    UserMypageSerializer
+    UserMypageSerializer,
+    UserFeedSerializer
 )
 
 class UserView(APIView):
@@ -68,4 +69,9 @@ class MypageView(APIView):
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         serializer = UserMypageSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def get(self, request):
+        user = request.user
+        serializer = UserFeedSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)

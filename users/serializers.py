@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from users.models import User
 from posts.serializers import PostingSerializer
-from products.serializers import ProductReviewSerializer
+from products.serializers import ProductReviewSerializer, ProductListSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -71,3 +71,11 @@ class UserMypageSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("posting_set", "productreview_set")
+
+class UserFeedSerializer(serializers.ModelSerializer):
+    
+    like_products = ProductListSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ("like_products", )
