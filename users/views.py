@@ -3,10 +3,11 @@ from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from users.models import User
-from posts.serializers import PostingSerializer
-from products.serializers import ProductReviewSerializer
 from posts.models import Posting
+from posts.serializers import PostingSerializer
 from products.models import ProductReview
+from products.serializers import ProductReviewSerializer
+from django.db.models.query_utils import Q
 
 
 from users.serializers import (
@@ -72,6 +73,16 @@ class MypageView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def get(self, request):
-        user = request.user
-        serializer = UserFeedSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        you = request.user
+        serializer = UserFeedSerializer(you)
+        q = Q()
+        for following in you.followings.all():
+            q.add(Q(user=following), q.OR)
+        if len(q) == 0:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            postings = Posting.objects.filter(q)
+            posting_serializer = PostingSerializer(postings, many=True)
+            reviews = ProductReview.objects.filter(q)
+            review_serializer = ProductReviewSerializer(reviews, many=True)
+            return Response((serializer.data, posting_serializer.data, review_serializer.data), status=status.HTTP_200_OK)
