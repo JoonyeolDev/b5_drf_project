@@ -4,14 +4,14 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from products.models import Product, ProductReview
 from products.serializers import ProductSerializer, ProductCreateSerializer, ProductListSerializer, ProductReviewSerializer, ProductReviewCreateSerializer
-
+from drf_project.permissions import IsAdminUserOrReadonly, IsAuthorOrReadonly
 # Create your views here.
 
 # product/
 class ProductView(APIView):
     # IsAuthenticatedOrReadOnly : 인증된 사람은 쓰기 가능, 그 외 읽기만 가능[GET, HEAD, OPTIONS]
     # IsAdminUser : 관리자만 쓰기 가능[POST, PUT, PATCH, DELETE]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAdminUser | permissions.AllowAny]
+    permission_classes = [IsAdminUserOrReadonly]
 
     def get(self, request):
         products = Product.objects.all()
@@ -28,7 +28,7 @@ class ProductView(APIView):
 
 # product/<int:product_id>/
 class ProductDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAdminUser | permissions.AllowAny]
+    permission_classes = [IsAdminUserOrReadonly]
 
     def get(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
@@ -52,7 +52,7 @@ class ProductDetailView(APIView):
 
 # product/<int:product_id>/review/
 class ProductReviewView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrReadonly]
 
     def get(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
@@ -71,7 +71,7 @@ class ProductReviewView(APIView):
 
 # product/<int:product_id>/review/<int:review_id>
 class ProductReviewDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrReadonly]
 
     def get(self, request, product_id, review_id):
         review = get_object_or_404(ProductReview, id=review_id)
