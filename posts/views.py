@@ -101,6 +101,10 @@ class CommentView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    """
+    댓글 작성
+    """
+
     def post(self, request, posting_id):
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -112,6 +116,10 @@ class CommentView(APIView):
 
 
 class CommentModifyView(APIView):
+    """
+    댓글 수정
+    """
+
     def put(self, request, posting_id, comment_id):
         comment = get_object_or_404(Comment, id=comment_id)
         serializer = CommentSerializer(comment, data=request.data)
@@ -119,6 +127,10 @@ class CommentModifyView(APIView):
             serializer.save(posting_id=posting_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
             # serializer.save(user=request.user, posting=posting)
+
+    """
+    댓글 삭제
+    """
 
     def delete(self, request, posting_id, comment_id):
         comment = get_object_or_404(Comment, id=comment_id)
@@ -128,7 +140,12 @@ class CommentModifyView(APIView):
         # else:
         # return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class LikeView(APIView):
+    """
+    게시글 좋아요
+    """
+
     def post(self, request, posting_id):
         # is_liked = get_object_or_404(Like, user=request.user, posting_id=posting_id)
         # like = Like.objects.filter(posting_id=posting_id, user=request.user)
