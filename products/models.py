@@ -1,5 +1,7 @@
 from django.db import models
+from django.urls import reverse
 from users.models import User
+
 # Create your models here.
 
 class Product(models.Model):
@@ -10,6 +12,9 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     likes = models.ManyToManyField(User, related_name="like_products")
+
+    def get_absolute_url(self):
+        return reverse('product_detail', kwargs={"product_id":self.id})
 
     def __str__(self):
         return str(self.name)

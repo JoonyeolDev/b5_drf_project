@@ -11,14 +11,13 @@ from products.serializers import ProductSerializer, ProductCreateSerializer, Pro
 class ProductView(APIView):
     # IsAuthenticatedOrReadOnly : 인증된 사람은 쓰기 가능, 그 외 읽기만 가능[GET, HEAD, OPTIONS]
     # IsAdminUser : 관리자만 쓰기 가능[POST, PUT, PATCH, DELETE]
-    # 두 개를 같이쓰면 : 인증된 관리자만 쓰기가능, 그 외 읽기만 가능
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAdminUser | permissions.AllowAny]
 
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
     def post(self,request):
         serializer = ProductCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -29,7 +28,7 @@ class ProductView(APIView):
 
 # product/<int:product_id>/
 class ProductDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,permissions.IsAdminUser | permissions.AllowAny]
 
     def get(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
