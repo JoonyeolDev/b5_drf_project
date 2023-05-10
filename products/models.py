@@ -37,6 +37,9 @@ class ProductReview(models.Model):
     store = models.CharField(max_length=50, blank=True, null=True)
     likes = models.ManyToManyField(User, related_name="like_reviews")
 
+    def get_absolute_url(self,product_id):
+        return reverse('product_review_detail', kwargs={"product_id":product_id, "review_id":self.id})
+
     def __str__(self):
         if len(str(self.content))>=15:
             title = str(self.content)[:15]+'...'

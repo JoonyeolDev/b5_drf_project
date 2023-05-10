@@ -52,7 +52,7 @@ class ProductDetailView(APIView):
 
 # product/<int:product_id>/review/
 class ProductReviewView(APIView):
-    permission_classes = [IsAuthorOrReadonly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
@@ -73,13 +73,18 @@ class ProductReviewView(APIView):
 class ProductReviewDetailView(APIView):
     permission_classes = [IsAuthorOrReadonly]
 
+    def get_object(self):
+        obj = get_object_or_404(ProductReview, id=self.kwargs["review_id"])
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     def get(self, request, product_id, review_id):
         review = get_object_or_404(ProductReview, id=review_id)
         serializer = ProductReviewSerializer(review)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self,request, product_id, review_id):
-        review = get_object_or_404(ProductReview, id=review_id)
+        review = self.get_object()
         serializer = ProductReviewSerializer(review, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -88,7 +93,7 @@ class ProductReviewDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self,request, product_id, review_id):
-        review = get_object_or_404(ProductReview, id=review_id)
+        review = self.get_object()
         if request.user==review.user:
             review.delete()
             return Response({"massage":"삭제 완료"},status=status.HTTP_204_NO_CONTENT)
