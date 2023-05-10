@@ -1,5 +1,5 @@
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from posts.models import Posting
 from users.models import User
@@ -27,50 +27,25 @@ def get_temporary_image(temp_file):
     return temp_file
 
 
-# class PostingCreateTest(APITestCase):
-#     # 한번만 실행, 데이터베이스에 대한 모든 초기데이터 생성
-#     # 모든 테스트에서 공통으로 사용될 데이터
-#     @classmethod
-#     def setUpTestData(cls):
-#         cls.user_data = {
-#             "email": "test@testuser.com",
-#             "password": "testpassword",
-#             "username": "bbb",
-#             "gender": "F",
-#             "date_of_birth": "2001-01-01",
-#         }
-#         cls.posting_data = {
-#             "title": "test title",
-#             "content": "test content",
-#         }
-#         cls.user = User.objects.create_user("test@testuser.com", "testpassword")
+class PostingCreateTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
+        cls.posting_data = {"title": "test Title", "content": "test content"}
+        cls.user = User.objects.create_user("test@test.com", "test", "Test1234!")
 
-#     # 각각 테스트 마다 실행되는 메소드
-#     # 테스트에 필요한 데이터를 초기화 하거나 설정
-#     def setUp(self):
-#         self.access_token = self.client.post(
-#             reverse("token_obtain_pair"), self.user_data
-#         ).data["access"]
-
-#     def test_fail_if_not_logged_in(self):
-#         url = reverse("posting_view")
-#         response = self.client.post(url, self.article_data)
-#         self.assertEqual(response.status_code, 401)
-
-
-class PostingTests(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="test_user",
-            password="test_password",
-            email="test@test.com",
-        )
-        self.client.force_authenticate(user=self.user)
+        self.access_token = self.client.post(
+            reverse("token_obtain_pair"), self.user_data
+        ).data["access"]
 
-    def test_create_posting(self):
-        url = reverse("posting_view")
-        data = {"title": "Test Title", "content": "Test Content", "image": None}
-        response = self.client.post(url, data, format="json")
+    def test_create_posting_success(self):
+        response = self.client.post(
+            path=reverse("posting_view"),
+            data=self.posting_data,
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Posting.objects.count(), 1)
-        self.assertEqual(Posting.objects.get().title, "Test Title")
+        self.assertEqual(Posting.objects.get().title, "test Title")
+

@@ -16,8 +16,12 @@ from posts.serializers import (
 class PostingView(APIView):
     """
     게시글 리스트 모두 보여주기(작성 시간순으로 정렬)
-    추후 페이지네이션 추가
-    로그인 안해도 볼 수 있게?
+    추후 
+    페이지네이션, 
+    작성일 기준 정렬(최신순), 
+    총 좋아요 기준 정렬(인기순), 
+    7일 내 좋아요 기준 정렬(HOT 게시글?) 추가
+    로그인 안해도 볼 수 있게
     """
 
     def get(self, request):
@@ -48,7 +52,6 @@ class PostingDetailView(APIView):
 
     def get(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
-        # comment = Comment.objects.filter(id=posting_id)
         serializer = PostingDetailSerializer(posting)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -64,7 +67,7 @@ class PostingDetailView(APIView):
         if posting.user == request.user:
             if serializer.is_valid():
                 serializer.save(user=request.user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -143,6 +146,7 @@ class LikeView(APIView):
     """
     게시글 좋아요
     """
+
     def post(self, request, posting_id):
         posting = get_object_or_404(Posting, id=posting_id)
         try:
