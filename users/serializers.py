@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from users.models import User
+from posts.serializers import PostingSerializer
+from products.serializers import ProductReviewSerializer, ProductListSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -54,9 +56,44 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return obj.followers.count()
     
     def get_followings_count(self, obj):
-        return obj.followers.count()
+        return obj.followings.count()
 
     class Meta:
         model = User
         fields=("id", "email", "username", "image", "gender", "date_of_birth", "preference", "introduction", "followings_count", "followers_count")
-        
+
+
+class UserMypageSerializer(serializers.ModelSerializer):
+    
+    posting_set = PostingSerializer(many=True)
+    productreview_set = ProductReviewSerializer(many=True)
+    
+    class Meta:
+        model = User
+        fields = ("posting_set", "productreview_set")
+
+class UserFeedSerializer(serializers.ModelSerializer):
+    
+    like_products = ProductListSerializer(many=True)
+    like_reviews = ProductReviewSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ("like_products", "like_reviews")
+
+
+class UserFollowSerializer(serializers.ModelSerializer):
+    followings_count = serializers.SerializerMethodField()
+    followings = serializers.StringRelatedField(many=True)
+    followers_count = serializers.SerializerMethodField()
+    followers = serializers.StringRelatedField(many=True)
+
+    def get_followers_count(self, obj):
+        return obj.followers.count()
+    
+    def get_followings_count(self, obj):
+        return obj.followings.count()
+
+    class Meta:
+        model = User
+        fields=("followings_count", "followings", "followers_count", "followers")
