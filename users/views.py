@@ -19,7 +19,7 @@ from users.serializers import (
     UserFollowSerializer
 )
 
-
+# user/signup/
 class UserView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -29,15 +29,22 @@ class UserView(APIView):
         else:
             return Response({"message": f"${serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
 
-
+# user/profile/
 class ProfileView(APIView):
-
+    """
+    회원 탈퇴
+    is_active = False로 변경만 하고 회원 정보는 계속 보관
+    email(아이디), name 남아있어서 탈퇴한 회원이 같은 정보로 재가입 불가
+    """
     def delete(self, request):
         user = request.user
         user.is_active = False
         user.save()
         return Response({"message": "회원 탈퇴!"})
 
+    """
+    프로필 정보 수정
+    """
     def put(self, request):
         serializer = UserUpdateSerializer(
             instance=request.user, data=request.data)
@@ -46,7 +53,12 @@ class ProfileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    """
+    사용자 프로필 조회
+    user_id로 아무나 프로필 조회 가능
+    """
+    # user/profile/<int:user_id>/
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         return Response(UserProfileSerializer(user).data, status=status.HTTP_200_OK)
@@ -54,7 +66,10 @@ class ProfileView(APIView):
 
 class FollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+    """
+    팔로우/언팔로우 요청
+    """
+    # user/follow/<int:user_id>/
     def post(self, request, user_id):
         you = get_object_or_404(User, id=user_id)
         me = request.user
@@ -68,12 +83,18 @@ class FollowView(APIView):
                 you.followers.add(me)
                 return Response("팔로우했습니다.", status=status.HTTP_200_OK)
     
+    """
+    내가 팔로우한 사람/나를 팔로우한 사람 보기
+    """
+    # user/follow/
     def get(self, request):
         user = request.user
         serializer = UserFollowSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+"""
+특정 사용자가 작성한 게시글과 리뷰 보기
+"""
 # user/mypage/<int:user_id>/
 class MypageView(APIView):
 
@@ -82,8 +103,10 @@ class MypageView(APIView):
         serializer = UserMypageSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-# user/mypage/like/
+"""
+내가 좋아요한 상품, 리뷰, 게시글 보기
+"""
+# user/myfeed/like/
 class MyfeedLikeView(APIView):    
     permission_classes = [permissions.IsAuthenticated]
 
@@ -92,12 +115,12 @@ class MyfeedLikeView(APIView):
         serializer = UserFeedSerializer(me)
         like_posting_ids = me.like_set.all().values_list("posting_id")
 
-        q = Q()  # 아직 filter하지 않은 모든 것
+        q = Q()
         for like_posting_id in like_posting_ids:
             q.add(Q(id=like_posting_id[0]), q.OR)
         
         if len(q) == 0:  # 아직 좋아요 한 게시글이 없을 경우. Posting.objects.filter(q): 모든 게시글.
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)  # 좋아요한 상품, 리뷰 데이터만 보냄
         else:
             liked_postings = Posting.objects.filter(q)
             me_like_posting_serializer = PostingSerializer(liked_postings, many=True)
@@ -106,7 +129,9 @@ class MyfeedLikeView(APIView):
                 me_like_posting_serializer.data  # 좋아요한 게시글
                 ), status=status.HTTP_200_OK)
 
-
+"""
+내가 팔로우 하는 사람이 작성한 게시글과 리뷰 보기
+"""
 # user/myfeed/
 class MyfeedFollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]
