@@ -261,6 +261,7 @@ class CommentModifyViewTest(APITestCase):
         self.assertEqual(response.data, None)
 
 
+# view = LikeView, url name = "like_view", method = post
 class LikeViewTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
