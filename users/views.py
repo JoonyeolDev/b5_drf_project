@@ -18,6 +18,7 @@ from users.serializers import (
     UserFeedSerializer
 )
 
+
 class UserView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -26,6 +27,7 @@ class UserView(APIView):
             return Response({"message": "가입완료!"}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message": f"${serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ProfileView(APIView):
 
@@ -47,7 +49,8 @@ class ProfileView(APIView):
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         return Response(UserProfileSerializer(user).data, status=status.HTTP_200_OK)
-    
+
+
 class FollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
@@ -65,24 +68,57 @@ class FollowView(APIView):
                 return Response("팔로우했습니다.", status=status.HTTP_200_OK)
 
 
+# user/mypage/<int:user_id>/
 class MypageView(APIView):
 
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         serializer = UserMypageSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# user/mypage/like/
+class MypageLikeView(APIView):    
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        me = request.user
+        serializer = UserFeedSerializer(me)
+        like_posting_ids = me.like_set.all().values_list("posting_id")
+
+        q = Q()  # 아직 filter하지 않은 모든 것
+        for like_posting_id in like_posting_ids:
+            q.add(Q(id=like_posting_id[0]), q.OR)
+        
+        if len(q) == 0:  # 아직 좋아요 한 게시글이 없을 경우. Posting.objects.filter(q): 모든 게시글.
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            liked_postings = Posting.objects.filter(q)
+            me_like_posting_serializer = PostingSerializer(liked_postings, many=True)
+            return Response((
+                serializer.data,  # 좋아요한 상품, 리뷰
+                me_like_posting_serializer.data  # 좋아요한 게시글
+                ), status=status.HTTP_200_OK)
+
+
+# user/mypage/follow/
+class MypageFollowView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
-        you = request.user
-        serializer = UserFeedSerializer(you)
+        
+        me = request.user
+
         q = Q()
-        for following in you.followings.all():
+
+        for following in me.followings.all():
             q.add(Q(user=following), q.OR)
-        if len(q) == 0:
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        if len(q) == 0:  # 아무도 팔로우하지 않았을 경우. Posting.objects.filter(q): 모든 게시글.
+            return Response("팔로우한 사용자가 없습니다.", status=status.HTTP_200_OK)
         else:
             postings = Posting.objects.filter(q)
             posting_serializer = PostingSerializer(postings, many=True)
             reviews = ProductReview.objects.filter(q)
             review_serializer = ProductReviewSerializer(reviews, many=True)
-            return Response((serializer.data, posting_serializer.data, review_serializer.data), status=status.HTTP_200_OK)
+            return Response((posting_serializer.data, review_serializer.data), status=status.HTTP_200_OK)
