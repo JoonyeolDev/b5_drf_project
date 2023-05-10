@@ -15,7 +15,8 @@ from users.serializers import (
     UserUpdateSerializer, 
     UserProfileSerializer,
     UserMypageSerializer,
-    UserFeedSerializer
+    UserFeedSerializer,
+    UserFollowSerializer
 )
 
 
@@ -68,7 +69,9 @@ class FollowView(APIView):
                 return Response("팔로우했습니다.", status=status.HTTP_200_OK)
     
     def get(self, request):
-        pass
+        user = request.user
+        serializer = UserFollowSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # user/mypage/<int:user_id>/
@@ -125,3 +128,4 @@ class MyfeedFollowView(APIView):
             reviews = ProductReview.objects.filter(q)
             review_serializer = ProductReviewSerializer(reviews, many=True)
             return Response((posting_serializer.data, review_serializer.data), status=status.HTTP_200_OK)
+        

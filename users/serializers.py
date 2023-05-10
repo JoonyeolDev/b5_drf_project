@@ -80,3 +80,20 @@ class UserFeedSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("like_products", "like_reviews")
+
+
+class UserFollowSerializer(serializers.ModelSerializer):
+    followings_count = serializers.SerializerMethodField()
+    followings = serializers.StringRelatedField(many=True)
+    followers_count = serializers.SerializerMethodField()
+    followers = serializers.StringRelatedField(many=True)
+
+    def get_followers_count(self, obj):
+        return obj.followers.count()
+    
+    def get_followings_count(self, obj):
+        return obj.followings.count()
+
+    class Meta:
+        model = User
+        fields=("followings_count", "followings", "followers_count", "followers")
