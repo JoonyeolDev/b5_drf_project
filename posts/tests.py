@@ -7,6 +7,7 @@ from users.models import User
 from django.test.client import MULTIPART_CONTENT, encode_multipart, BOUNDARY
 from PIL import Image
 import tempfile
+import os
 
 # from faker import Faker
 
@@ -40,6 +41,12 @@ class PostingViewTest(APITestCase):
         self.access_token = self.client.post(
             reverse("token_obtain_pair"), self.user_data
         ).data["access"]
+
+    # 테스트 후 이미지 파일 삭제하기
+    def tearDown(self):
+        for posting in Posting.objects.all():
+            posting.image.delete()
+            posting.delete()
 
     # 게시글 작성
     def test_create_posting_success(self):
@@ -252,3 +259,36 @@ class CommentModifyViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Comment.objects.count(), 4)
         self.assertEqual(response.data, None)
+
+
+class LikeViewTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
+        cls.posting_data = {"title": "test Title", "content": "test content"}
+        cls.user = User.objects.create_user("test@test.com", "test", "Test1234!")
+        cls.posting = Posting.objects.create(**cls.posting_data, user=cls.user)
+
+    def setUp(self):
+        self.access_token = self.client.post(
+            reverse("token_obtain_pair"), self.user_data
+        ).data["access"]
+
+    # 좋아요 누르기
+    def test_like_posting(self):
+        response = self.client.post(
+            path=reverse("like_view", kwargs={"posting_id": 1}),
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, "좋아요")
+
+    # 좋아요 취소하기
+    def test_cancel_like_posting(self):
+        like = Like.objects.create(user=self.user, posting=self.posting)
+        response = self.client.post(
+            path=reverse("like_view", kwargs={"posting_id": 1}),
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, "좋아요 삭제")
