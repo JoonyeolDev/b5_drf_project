@@ -66,6 +66,9 @@ class FollowView(APIView):
             else:
                 you.followers.add(me)
                 return Response("팔로우했습니다.", status=status.HTTP_200_OK)
+    
+    def get(self, request):
+        pass
 
 
 # user/mypage/<int:user_id>/
@@ -78,7 +81,7 @@ class MypageView(APIView):
 
 
 # user/mypage/like/
-class MypageLikeView(APIView):    
+class MyfeedLikeView(APIView):    
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -101,8 +104,8 @@ class MypageLikeView(APIView):
                 ), status=status.HTTP_200_OK)
 
 
-# user/mypage/follow/
-class MypageFollowView(APIView):
+# user/myfeed/
+class MyfeedFollowView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
