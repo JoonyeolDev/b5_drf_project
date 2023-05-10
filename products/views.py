@@ -4,21 +4,20 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from products.models import Product, ProductReview
 from products.serializers import ProductSerializer, ProductCreateSerializer, ProductListSerializer, ProductReviewSerializer, ProductReviewCreateSerializer
-
+from drf_project.permissions import IsAdminUserOrReadonly, IsAuthorOrReadonly
 # Create your views here.
 
 # product/
 class ProductView(APIView):
     # IsAuthenticatedOrReadOnly : 인증된 사람은 쓰기 가능, 그 외 읽기만 가능[GET, HEAD, OPTIONS]
     # IsAdminUser : 관리자만 쓰기 가능[POST, PUT, PATCH, DELETE]
-    # 두 개를 같이쓰면 : 인증된 관리자만 쓰기가능, 그 외 읽기만 가능
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.IsAdminUser]
+    permission_classes = [IsAdminUserOrReadonly]
 
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
     def post(self,request):
         serializer = ProductCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -29,7 +28,7 @@ class ProductView(APIView):
 
 # product/<int:product_id>/
 class ProductDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, permissions.IsAdminUser]
+    permission_classes = [IsAdminUserOrReadonly]
 
     def get(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
@@ -72,7 +71,12 @@ class ProductReviewView(APIView):
 
 # product/<int:product_id>/review/<int:review_id>
 class ProductReviewDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrReadonly]
+
+    def get_object(self):
+        obj = get_object_or_404(ProductReview, id=self.kwargs["review_id"])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get(self, request, product_id, review_id):
         review = get_object_or_404(ProductReview, id=review_id)
@@ -80,7 +84,7 @@ class ProductReviewDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self,request, product_id, review_id):
-        review = get_object_or_404(ProductReview, id=review_id)
+        review = self.get_object()
         serializer = ProductReviewSerializer(review, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -89,7 +93,7 @@ class ProductReviewDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self,request, product_id, review_id):
-        review = get_object_or_404(ProductReview, id=review_id)
+        review = self.get_object()
         if request.user==review.user:
             review.delete()
             return Response({"massage":"삭제 완료"},status=status.HTTP_204_NO_CONTENT)
