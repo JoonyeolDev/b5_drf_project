@@ -67,7 +67,7 @@ class PostingDetailView(APIView):
         if posting.user == request.user:
             if serializer.is_valid():
                 serializer.save(user=request.user)
-                return Response(serializer.data, status=status.HTTP)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
