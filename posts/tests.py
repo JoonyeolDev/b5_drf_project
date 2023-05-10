@@ -123,4 +123,3 @@ class PostingDetailTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.data, None)
         self.assertEqual(Posting.objects.count(), 4)
-
