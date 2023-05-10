@@ -41,7 +41,7 @@ class PostingViewTest(APITestCase):
             reverse("token_obtain_pair"), self.user_data
         ).data["access"]
 
-    # 게시글 작성 성공
+    # 게시글 작성
     def test_create_posting_success(self):
         response = self.client.post(
             path=reverse("posting_view"),
@@ -51,6 +51,24 @@ class PostingViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Posting.objects.count(), 1)
         self.assertEqual(Posting.objects.get().title, "test Title")
+
+    # 이미지가 있는 게시글 작성
+    def test_create_posting_with_image(self):
+        temp_file = tempfile.NamedTemporaryFile()
+        temp_file.name = "image.png"
+        image_file = get_temporary_image(temp_file)
+        image_file.seek(0)
+        self.posting_data["image"] = image_file
+        response = self.client.post(
+            path=reverse("posting_view"),
+            data=encode_multipart(data=self.posting_data, boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT,
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Posting.objects.count(), 1)
+        self.assertEqual(Posting.objects.get().title, "test Title")
+        self.assertEqual(bool(Posting.objects.get().image), True)
 
     # 게시글 모두보기(아무것도 없을 때)
     def test_get_posting_list_empty(self):
@@ -97,7 +115,7 @@ class PostingDetailViewTest(APITestCase):
             reverse("token_obtain_pair"), self.user_data
         ).data["access"]
 
-    # 게시글 상세보기 성공
+    # 게시글 상세보기
     def test_posting_detail(self):
         response = self.client.get(
             path=reverse("posting_detail_view", kwargs={"posting_id": 5}),
@@ -143,7 +161,7 @@ class CommentViewTest(APITestCase):
             reverse("token_obtain_pair"), self.user_data
         ).data["access"]
 
-    # 코멘트 작성 성공
+    # 코멘트 작성
     def test_create_posting_success(self):
         response = self.client.post(
             path=reverse("comment_view", kwargs={"posting_id": 1}),
