@@ -3,6 +3,16 @@ from posts.models import Posting, Comment
 
 
 class PostingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Posting
+        fields = (
+            "title",
+            "content",
+            "image",
+        )
+
+
+class PostingListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     user_image = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
@@ -32,6 +42,7 @@ class PostingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Posting
         fields = (
+            "id",
             "title",
             "content",
             "image",
