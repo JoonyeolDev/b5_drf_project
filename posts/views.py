@@ -7,6 +7,7 @@ from posts.models import Posting, Comment, Like
 from posts.serializers import (
     PostingSerializer,
     PostingDetailSerializer,
+    PostingCreateSerializer,
     CommentSerializer,
     CommentCreateSerializer,
 )
@@ -35,7 +36,7 @@ class PostingView(APIView):
     """
 
     def post(self, request):
-        serializer = PostingSerializer(data=request.data)
+        serializer = PostingCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
         else:
