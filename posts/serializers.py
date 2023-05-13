@@ -18,8 +18,12 @@ class PostingListSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     content = serializers.SerializerMethodField()
-
+# 
     def get_content(self, obj):
+        if obj.content.find("br")+1:
+            return obj.content.replace("<p><br></p>","")
+        if obj.content.find("data:image/")+1 and obj.content.find("base64")+1:
+            return "(이미지 파일)"
         if len(obj.content) > 57:
             return obj.content[:57] + "..."
         return obj.content
