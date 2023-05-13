@@ -25,7 +25,7 @@ class PostingPagination(PageNumberPagination):
 
 # posting/
 class PostingView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = PostingPagination()
     """
     게시글 리스트 모두 보여주기(작성 시간순으로 정렬)
@@ -83,6 +83,8 @@ class PostingView(APIView):
 
 # posting/<int:posting_id>/
 class PostingDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     """
     게시글 상세보기 페이지
     id = posting_id인 게시글 1개 가져오기
@@ -126,6 +128,7 @@ class PostingDetailView(APIView):
 
 
 class CommentView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     """
     댓글 보기
     posting_id가 일치하는 comment를 related_name으로 가져오기
@@ -152,6 +155,7 @@ class CommentView(APIView):
 
 
 class CommentModifyView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     """
     댓글 수정
     """
@@ -181,6 +185,7 @@ class CommentModifyView(APIView):
 
 
 class LikeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     """
     게시글 좋아요
     """
