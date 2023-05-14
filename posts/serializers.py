@@ -20,9 +20,12 @@ class PostingListSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
 
     def get_content(self, obj):
+        if obj.content.find("br")+1:
+            return obj.content.replace("<p><br></p>", "")
         if len(obj.content) > 57:
             return obj.content[:57] + "..."
-        return obj.content
+        else:
+            return obj.content
 
     def get_username(self, obj):
         return obj.user.username
