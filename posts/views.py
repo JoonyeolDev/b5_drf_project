@@ -62,10 +62,10 @@ class PostingView(APIView):
             query_set = like_count_posting
         else:
             query_set = recent_posting
-        serializer = PostingListSerializer(
-            self.pagination_class.paginate_queryset(query_set, request), many=True
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        page = self.pagination_class.paginate_queryset(query_set, request)
+        serializer = PostingListSerializer(page, many=True)
+        return self.pagination_class.get_paginated_response(serializer.data)
 
     """
     게시글 작성기능
@@ -84,7 +84,6 @@ class PostingView(APIView):
 # posting/<int:posting_id>/
 class PostingDetailView(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    permission_classes = [permissions.AllowAny]
     """
     게시글 상세보기 페이지
     id = posting_id인 게시글 1개 가져오기
@@ -195,7 +194,9 @@ class LikeView(APIView):
         try:
             like = Like.objects.get(posting=posting, user=request.user)
             like.delete()
-            return Response("좋아요 삭제", status=status.HTTP_200_OK)
+            like_count = posting.like_set.count()
+            return Response({'liked': False, 'like_count': like_count}, status=status.HTTP_200_OK)
         except Like.DoesNotExist:
             like = Like.objects.create(posting=posting, user=request.user)
-            return Response("좋아요", status=status.HTTP_200_OK)
+            like_count = posting.like_set.count()
+            return Response({'liked': True, 'like_count': like_count}, status=status.HTTP_200_OK)
