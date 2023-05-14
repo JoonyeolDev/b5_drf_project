@@ -36,7 +36,9 @@ class ProductReview(models.Model):
     price = models.IntegerField(blank=True, null=True)
     store = models.CharField(max_length=50, blank=True, null=True)
     likes = models.ManyToManyField(User, related_name="like_reviews")
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
     def get_absolute_url(self,product_id):
         return reverse('product_review_detail', kwargs={"product_id":product_id, "review_id":self.id})
 

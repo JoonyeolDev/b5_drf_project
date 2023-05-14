@@ -8,7 +8,7 @@ from posts.serializers import PostingSerializer
 from products.models import ProductReview
 from products.serializers import ProductReviewSerializer
 from django.db.models.query_utils import Q
-
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from users.serializers import (
     UserSerializer, 
@@ -16,7 +16,8 @@ from users.serializers import (
     UserProfileSerializer,
     UserMypageSerializer,
     UserFeedSerializer,
-    UserFollowSerializer
+    UserFollowSerializer,
+    CustomTokenObtainPairSerializer
 )
 
 # user/signup/
@@ -28,6 +29,17 @@ class UserView(APIView):
             return Response({"message": "가입완료!"}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message": f"${serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+class MockView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        return Response("mock: get 요청")
+
 
 # user/profile/
 class ProfileView(APIView):
@@ -90,7 +102,30 @@ class FollowView(APIView):
     def get(self, request):
         user = request.user
         serializer = UserFollowSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        following_info_set = {}
+        
+        for i in serializer.data["followings"]:
+            following = get_object_or_404(User, username=i)
+            following_info_set[f"{following.username}"] = []
+            
+            following_info_set[f"{following.username}"].append(following.username)
+            following_info_set[f"{following.username}"].append(following.email)
+            following_info_set[f"{following.username}"].append(str(following.image))
+            following_info_set[f"{following.username}"].append(following.id)
+        
+        follower_info_set = {}
+        
+        for i in serializer.data["followers"]:
+            follower = get_object_or_404(User, username=i)
+            follower_info_set[f"{follower.username}"] = []
+            
+            follower_info_set[f"{follower.username}"].append(follower.username)
+            follower_info_set[f"{follower.username}"].append(follower.email)
+            follower_info_set[f"{follower.username}"].append(str(follower.image))
+            follower_info_set[f"{follower.username}"].append(follower.id)
+
+        return Response((serializer.data, following_info_set, follower_info_set), status=status.HTTP_200_OK)
 
 """
 특정 사용자가 작성한 게시글과 리뷰 보기
