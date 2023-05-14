@@ -9,13 +9,19 @@ class ProductReviewCreateSerializer(serializers.ModelSerializer):
 
 class ProductReviewSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
+
+    def get_username(self,obj):
+        return obj.user.username
+    
+
 
     def get_likes_count(self,obj):
         return obj.likes.count()
     
     class Meta:
         model = ProductReview
-        fields = ('score','content','price','store','likes_count')
+        fields = ('id','username','score','content','price','store','likes_count','updated_at')
 
 
 class ProductListSerializer(serializers.ModelSerializer):
