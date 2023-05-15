@@ -2,6 +2,7 @@ from rest_framework import serializers
 from users.models import User
 from posts.serializers import PostingSerializer
 from products.serializers import ProductReviewSerializer, ProductListSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -21,6 +22,18 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token['name'] = user.username
+        token['email'] = user.email
+
+        return token
+        
+    
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -30,22 +43,34 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             "password": {
                 "write_only": True,
             },
+            "username": {
+                "required": False,
+            },
         }
 
     def update(self, instance, validated_data):
-        instance.email = validated_data.get("email", instance.email)
-        instance.username = validated_data.get("username", instance.username)
-        instance.gender = validated_data.get("gender", instance.gender)
-        instance.date_of_birth = validated_data.get("date_of_birth", instance.date_of_birth)
-        instance.preference = validated_data.get("preference", instance.preference)
-        instance.introduction = validated_data.get(
-            "introduction", instance.introduction)
-        instance.image = validated_data.get(
-            "image", instance.image)    
-        instance.password = validated_data.get("password", instance.password)
-        instance.set_password(instance.password)
-        instance.save()
-        return instance
+        user = super().update(instance, validated_data)
+        password = user.password
+        user.set_password(password)
+        user.save()
+        return user
+
+    # def update(self, instance, validated_data):
+    #     print(instance.username, "로그인안됌???")
+    #     print(validated_data.get("username", instance.email))
+    #     instance.email = validated_data.get("email", instance.email)
+    #     instance.username = validated_data.get("username", instance.username)
+    #     instance.gender = validated_data.get("gender", instance.gender)
+    #     instance.date_of_birth = validated_data.get("date_of_birth", instance.date_of_birth)
+    #     instance.preference = validated_data.get("preference", instance.preference)
+    #     instance.introduction = validated_data.get(
+    #         "introduction", instance.introduction)
+    #     instance.image = validated_data.get(
+    #         "image", instance.image)    
+    #     instance.password = validated_data.get("password", instance.password)
+    #     instance.set_password(instance.password)
+    #     instance.save()
+    #     return instance
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
