@@ -85,7 +85,7 @@ class ProductReviewDetailView(APIView):
 
     def put(self,request, product_id, review_id):
         review = self.get_object()
-        serializer = ProductReviewSerializer(review, data=request.data)
+        serializer = ProductReviewCreateSerializer(review, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

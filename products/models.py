@@ -6,7 +6,7 @@ from users.models import User
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    introdution = models.TextField()
+    introduction = models.TextField()
     image = models.ImageField(blank=True, null=True)
     brand = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)

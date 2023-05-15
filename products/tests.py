@@ -30,7 +30,7 @@ class ReviewDeleteTest(APITestCase):
         cls.user_data = {'email':'test@naver.com','password':'password'}
         cls.another_user = User.objects.create_user('another@naver.com','another_joonyeol','password')
         cls.another_user_data = {'email':'another@naver.com','password':'password'}
-        cls.product = Product.objects.create(name=cls.faker.sentence(), introdution=cls.faker.text())
+        cls.product = Product.objects.create(name=cls.faker.sentence(), introduction=cls.faker.text())
         cls.review = ProductReview.objects.create(user=cls.user, product=cls.product, score=random.randint(1,5), content=cls.faker.text())
     
     def setUp(self):
@@ -68,7 +68,7 @@ class ReviewUpdateTest(APITestCase):
         cls.user_data = {'email':'test@naver.com','password':'password'}
         cls.another_user = User.objects.create_user('another@naver.com','another_joonyeol','password')
         cls.another_user_data = {'email':'another@naver.com','password':'password'}
-        cls.product = Product.objects.create(name=cls.faker.sentence(), introdution=cls.faker.text())
+        cls.product = Product.objects.create(name=cls.faker.sentence(), introduction=cls.faker.text())
         cls.review = ProductReview.objects.create(user=cls.user, product=cls.product, score=random.randint(1,5), content=cls.faker.text())
         cls.review_data = {'user':cls.user, 'product':cls.product, 'score':3, 'content':'update test content'}
     
@@ -102,7 +102,7 @@ class ReviewUpdateTest(APITestCase):
 
         # review 정보가 수정됐는지 확인
         update_review = ProductReview.objects.create(user=self.user, product=self.product, score=3, content='update test content')
-        serializer = ProductReviewSerializer(update_review).data
+        serializer = ProductReviewCreateSerializer(update_review).data
         for key, value in serializer.items():
             self.assertEqual(response.data[key], value) 
     
@@ -112,7 +112,7 @@ class ReviewCreateTest(APITestCase):
         cls.faker = Faker()
         cls.user = User.objects.create_user('test@naver.com','test_joonyeol','password')
         cls.user_data = {'email':'test@naver.com','password':'password'}
-        cls.product = Product.objects.create(name=cls.faker.sentence(), introdution=cls.faker.text())
+        cls.product = Product.objects.create(name=cls.faker.sentence(), introduction=cls.faker.text())
         cls.review_data = {'user':cls.user, 'product':cls.product, 'score':random.randint(1,5), 'content':cls.faker.text()}
 
     def setUp(self):
@@ -139,7 +139,7 @@ class ReviewReadTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.faker = Faker()
-        cls.product = Product.objects.create(name=cls.faker.sentence(), introdution=cls.faker.text())
+        cls.product = Product.objects.create(name=cls.faker.sentence(), introduction=cls.faker.text())
         cls.reviews = []
         for i in range(10):
             cls.user = User.objects.create_user(cls.faker.email(),cls.faker.name(),cls.faker.word())
@@ -164,7 +164,7 @@ class ProductDeleteTest(APITestCase):
         cls.user_data = {'email':'test@naver.com','password':'password'}
         # Faker를 사용해서 랜덤 product를 만듦
         cls.faker = Faker()
-        cls.product = Product.objects.create(name=cls.faker.sentence(), introdution=cls.faker.text())
+        cls.product = Product.objects.create(name=cls.faker.sentence(), introduction=cls.faker.text())
 
     # admin, user의 access token을 받아옴
     def setUp(self):
@@ -201,10 +201,10 @@ class ProductUpdateTest(APITestCase):
         cls.admin_data = {'email':'admin@naver.com','password':'password'}
         cls.user = User.objects.create_user('test@naver.com','test_joonyeol','password')
         cls.user_data = {'email':'test@naver.com','password':'password'}
-        cls.product_data = {'name':'product test name','introdution':'product test introduction','brand':'product test brand'}
+        cls.product_data = {'name':'product test name','introduction':'product test introduction','brand':'product test brand'}
         # Faker를 사용해서 랜덤 product를 만듦
         cls.faker = Faker()
-        cls.product = Product.objects.create(name=cls.faker.sentence(), introdution=cls.faker.text())
+        cls.product = Product.objects.create(name=cls.faker.sentence(), introduction=cls.faker.text())
 
     # admin, user의 access token을 받아옴
     def setUp(self):
@@ -246,7 +246,7 @@ class ProductCreateTest(APITestCase):
         cls.admin_data = {'email':'admin@naver.com','password':'password'}
         cls.user = User.objects.create_user('test@naver.com','test_joonyeol','password')
         cls.user_data = {'email':'test@naver.com','password':'password'}
-        cls.product_data = {'name':'product test name','introdution':'product test introduction','brand':'product test brand'}
+        cls.product_data = {'name':'product test name','introduction':'product test introduction','brand':'product test brand'}
 
     # admin, user의 access token을 받아옴
     def setUp(self):
@@ -303,7 +303,7 @@ class ProductReadTest(APITestCase):
         cls.faker = Faker()
         cls.products = []
         for i in range(10):
-            cls.products.append(Product.objects.create(name=cls.faker.sentence(), introdution=cls.faker.text()))
+            cls.products.append(Product.objects.create(name=cls.faker.sentence(), introduction=cls.faker.text()))
 
     # 랜덤 생성한 product의 response와 serializer의 값이 같은지 확인
     def test_get_product(self):
