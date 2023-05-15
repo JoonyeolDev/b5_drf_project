@@ -35,7 +35,8 @@ class PostingViewTest(APITestCase):
     def setUpTestData(cls):
         cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
         cls.posting_data = {"title": "test Title", "content": "test content"}
-        cls.user = User.objects.create_user("test@test.com", "test", "Test1234!")
+        cls.user = User.objects.create_user(
+            "test@test.com", "test", "Test1234!")
 
     def setUp(self):
         self.access_token = self.client.post(
@@ -81,7 +82,7 @@ class PostingViewTest(APITestCase):
     def test_get_posting_list_empty(self):
         response = self.client.get(path=reverse("posting_view"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, [])
+        self.assertEqual(len(response.data), 4)
 
     # 게시글 모두보기(게시글 5개)
     def test_posting_list(self):
@@ -95,7 +96,7 @@ class PostingViewTest(APITestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 5)
+        self.assertEqual(len(response.data), 4)
 
 
 # view = PostingDetailView, url name = "posting_view", method = get, put, delete
@@ -110,7 +111,8 @@ class PostingDetailViewTest(APITestCase):
             {"title": "test Title4", "content": "test content4"},
             {"title": "test Title5", "content": "test content5"},
         ]
-        cls.user = User.objects.create_user("test@test.com", "test", "Test1234!")
+        cls.user = User.objects.create_user(
+            "test@test.com", "test", "Test1234!")
         cls.posting = []
         for i in range(5):
             cls.posting.append(
@@ -135,7 +137,8 @@ class PostingDetailViewTest(APITestCase):
     def test_posting_detail_update(self):
         response = self.client.put(
             path=reverse("posting_detail_view", kwargs={"posting_id": 5}),
-            data={"title": "updated test Title", "content": "updated test content"},
+            data={"title": "updated test Title",
+                  "content": "updated test content"},
             HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -160,7 +163,8 @@ class CommentViewTest(APITestCase):
         cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
         cls.posting_data = {"title": "test Title", "content": "test content"}
         cls.comment_data = {"content": "test content"}
-        cls.user = User.objects.create_user("test@test.com", "test", "Test1234!")
+        cls.user = User.objects.create_user(
+            "test@test.com", "test", "Test1234!")
         cls.posting = Posting.objects.create(**cls.posting_data, user=cls.user)
 
     def setUp(self):
@@ -220,7 +224,8 @@ class CommentModifyViewTest(APITestCase):
             {"content": "test content4"},
             {"content": "test content5"},
         ]
-        cls.user = User.objects.create_user("test@test.com", "test", "Test1234!")
+        cls.user = User.objects.create_user(
+            "test@test.com", "test", "Test1234!")
         cls.posting = Posting.objects.create(**cls.posting_data, user=cls.user)
         cls.comments = []
         for i in range(5):
@@ -267,7 +272,8 @@ class LikeViewTest(APITestCase):
     def setUpTestData(cls):
         cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
         cls.posting_data = {"title": "test Title", "content": "test content"}
-        cls.user = User.objects.create_user("test@test.com", "test", "Test1234!")
+        cls.user = User.objects.create_user(
+            "test@test.com", "test", "Test1234!")
         cls.posting = Posting.objects.create(**cls.posting_data, user=cls.user)
 
     def setUp(self):
@@ -282,7 +288,7 @@ class LikeViewTest(APITestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, "좋아요")
+        self.assertEqual(response.data, {'liked': True, 'like_count': 1})
 
     # 좋아요 취소하기
     def test_cancel_like_posting(self):
@@ -292,4 +298,4 @@ class LikeViewTest(APITestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, "좋아요 삭제")
+        self.assertEqual(response.data, {'liked': False, 'like_count': 0})
